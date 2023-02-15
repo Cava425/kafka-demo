@@ -59,7 +59,7 @@ public class ProducerTests {
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "producer.client.id.demo");
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
-        ProducerRecord<String, String> record = new ProducerRecord<>("test_topic", "Hello Kafka!");
+        ProducerRecord<String, String> record = new ProducerRecord<>("test_topic","key-test", "Hello Kafka!");
         producer.send(record, new Callback() {
             @Override
             public void onCompletion(RecordMetadata recordMetadata, Exception e) {
