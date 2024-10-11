@@ -20,17 +20,20 @@ public class ProducerTests {
 
     /**
      * 同步发送方式，发送结束后调用Feature方法，阻塞等待Kafka响应，直到发送成功或者发生异常
+     * 需要强一致性的场景下，采用同步发送，设置 RETRIES_CONFIG RETRY_BACKOFF_MS_CONFIG ACKS_CONFIG 3个参数
      * @throws Exception
      */
     @Test
     public void kafkaProducerSync() throws Exception{
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.20.50.88:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "producer.client.id.demo");
         // 生产者重试
-        props.put(ProducerConfig.RETRIES_CONFIG, 10);
+        props.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
+        // 重试时间间隔, 结合集群故障恢复时间设置
+        props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 10000);
         /**
          * acks = 1
          *  默认值即为1。生产者发送消息之后，只要分区的 leader 副本成功写入消息，那么它就会收到来自服务端的成功响应。
@@ -41,15 +44,18 @@ public class ProducerTests {
          *  生产者在消息发送之后，需要等待 ISR 中的所有副本都成功写入消息之后才能够收到来自服务端的成功响应。
          *  在其他配置环境相同的情况下，acks 设置为 -1（all） 可以达到最强的可靠性。
          */
-        props.put(ProducerConfig.ACKS_CONFIG, "1");
+        props.put(ProducerConfig.ACKS_CONFIG, "-1");
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
-        ProducerRecord<String, String> record = new ProducerRecord<>("test_topic", "Hello Kafka!");
+        ProducerRecord<String, String> record = new ProducerRecord<>("quickstart-events", "Hello Kafka!");
         Future<RecordMetadata> metadataFuture = producer.send(record);
         RecordMetadata recordMetadata = metadataFuture.get();
         log.info("发送消息结果:topic={}, partition={}, offset={}", recordMetadata.topic(), recordMetadata.partition(), recordMetadata.offset());
     }
 
+    /**
+     * 异步发送
+     */
     @Test
     public void kafkaProducerAsync() throws Exception{
         Properties props = new Properties();

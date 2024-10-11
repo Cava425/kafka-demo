@@ -29,7 +29,7 @@ public class ConsumerTests {
     @Test
     public void test(){
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "172.20.50.88:9092");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "group.demo");
@@ -45,7 +45,7 @@ public class ConsumerTests {
         KafkaConsumer<String, String> consumer = null;
         try{
             consumer = new KafkaConsumer<>(props);
-            consumer.subscribe(Arrays.asList("test_topic"));
+            consumer.subscribe(Arrays.asList("quickstart-events"));
             while (true){
                 ConsumerRecords<String, String> records = consumer.poll(Duration.of(1, ChronoUnit.SECONDS));
                 for(ConsumerRecord<String, String> record : records){
